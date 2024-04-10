@@ -74,8 +74,7 @@ function displayGraph(data) {
   // Tooltip
   var tip = d3.tip()
   .attr('class', 'd3-tip')
-  .attr('id', 'tooltip')
-  .html('<p>justSomeHTML</p>');
+  .attr('id', 'tooltip');
 
   svg.call(tip);
 

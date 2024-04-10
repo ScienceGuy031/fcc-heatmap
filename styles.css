@@ -9,3 +9,8 @@
     margin: 0;
     text-align: center;
 }
+
+.cell:hover {
+    stroke: #000;
+    stroke-width: 2;
+}
