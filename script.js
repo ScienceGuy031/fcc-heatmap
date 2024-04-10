@@ -9,7 +9,7 @@ async function getData() {
     });
 }
 
-let width = document.getElementById("root").scrollWidth;
+let width = document.getElementById("root").scrollWidth * 0.9;
 let height = window.innerHeight * 0.5;
 
 const root = d3.select("#root");
@@ -56,7 +56,7 @@ function displayGraph(data) {
   const svg = d3.select("#heatmap");
 
   const x = d3.scaleBand();
-  x.range([0, width]);
+  x.range([0, width - 70]);
   x.domain(years);
 
   const xAxis = d3.axisBottom(x);
