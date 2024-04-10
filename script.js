@@ -10,7 +10,7 @@ async function getData() {
 }
 
 let width = document.getElementById("root").scrollWidth;
-let height = window.innerHeight * 0.8;
+let height = window.innerHeight * 0.5;
 
 const root = d3.select("#root");
 const header = root.append("div");
@@ -28,7 +28,8 @@ root
   .attr("id", "graph")
   .append("svg")
   .attr("width", width)
-  .attr("height", height);
+  .attr("height", height)
+  .attr('id', 'heatmap');
 
 getData();
 
@@ -52,7 +53,7 @@ function displayGraph(data) {
     "November",
     "December",
   ];
-  const svg = d3.select("svg");
+  const svg = d3.select("#heatmap");
 
   const x = d3.scaleBand();
   x.range([0, width]);
@@ -69,6 +70,14 @@ function displayGraph(data) {
   yAxis.tickFormat(function (d, i) {
     return `${months[i]}`;
   });
+
+  // Tooltip
+  var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .attr('id', 'tooltip')
+  .html('<p>justSomeHTML</p>');
+
+  svg.call(tip);
 
   // Axes
   svg
@@ -96,8 +105,18 @@ function displayGraph(data) {
     .attr("height", y.bandwidth())
     .attr("class", "cell")
     .attr("fill", (d) => getCellColor(d.variance))
-    .on("mouseover", (e, d) => displayTooltip(e, d))
-    .on("mouseout", () => hideTooltip());
+    .on("mouseover", (e, d) => {
+      let html = '';
+      let variance = Math.round(d.variance * 100) / 100;
+      html += `<p>${months[d.month - 1]} ${d.year}</p>`;
+      html += `<p>${Math.round((d.variance + baseTemp) * 100) / 100}°C</p>`;
+      html += `<p>${variance >= 0 ? '+' + variance : variance }K</p>`
+      tip.attr('data-year', d.year);
+      
+      tip.html(html);
+      tip.show(e)
+    })
+    .on("mouseout", tip.hide);
 
   // Legend
 
@@ -111,51 +130,27 @@ function displayGraph(data) {
     .attr("width", width)
     .attr("height", 80);
 
-  const legendScale = d3
-    .scaleLinear()
-    .domain([-7, 7])
-    .range([0, 500]);
+  const legendScale = d3.scaleLinear().domain([-7, 7]).range([0, 500]);
 
   legendAxis = d3.axisBottom(legendScale);
-  legendAxis.tickFormat((d) => d + '°C');
+  legendAxis.tickFormat((d) => d + "°C");
 
-  legend
-    .append("g")
-    .attr("transform", `translate(100,50)`)
-    .call(legendAxis);
+  legend.append("g").attr("transform", `translate(100,50)`).call(legendAxis);
 
-  let colors = []
+  let colors = [];
   for (let v = 7.5; v >= -7.5; v--) {
-    colors.push(getCellColor(v))
+    colors.push(getCellColor(v));
   }
-  
+
   colors.forEach((color, i) => {
-    legend.append('rect')
-    .attr('x', legendScale(i - 8) + 100)
-    .attr('y', 20)
-    .attr('width', 36)
-    .attr('height', 30)
-    .attr('fill', color);
-  })
-
-  // Tooltip
-
-  const tooltip = root.append('div').attr('id', 'tooltip');
-  tooltip.style('visibility', 'hidden');
-  tooltip.style('position', 'absolute');
-}
-
-function displayTooltip(e, d) {
-  const tooltip = d3.select('#tooltip');
-  tooltip.style('visibility', 'visible');
-  tooltip.append('text').text('syedxfcuhbijnokm');
-  console.log(d);
-}
-
-function hideTooltip() {
-  const tooltip = d3.select('#tooltip');
-  // remove text inside tooltip? d3.tip()?
-  tooltip.style('visibility', 'hidden');
+    legend
+      .append("rect")
+      .attr("x", legendScale(i - 8) + 100)
+      .attr("y", 20)
+      .attr("width", 36)
+      .attr("height", 30)
+      .attr("fill", color);
+  });
 }
 
 function getCellColor(variance) {
